@@ -325,15 +325,6 @@ void* DeathHandler::MallocHook(size_t size,
   return malloc_buffer;
 }
 
-#if __GNUC__ >= 4 && __GNUC_MINOR__ >= 6
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-#endif
-
 void DeathHandler::SignalHandler(int sig, void * /* info */, void *secret) {
   // Stop all other running threads by forking
   pid_t forkedPid = fork();
@@ -426,6 +417,16 @@ void DeathHandler::SignalHandler(int sig, void * /* info */, void *secret) {
   Safe::print2stderr("\nStack trace:\n");
   void **trace = reinterpret_cast<void**>(memory);
   memory += (frames_count_ + 2) * sizeof(void*);
+
+#if ( __GNUC__ == 4 && __GNUC_MINOR__ >= 6 ) || __GNUC__ >= 5
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
   // Workaround malloc() inside backtrace()
   void* (*oldMallocHook)(size_t, const void*) = __malloc_hook;
   void (*oldFreeHook)(void *, const void *) = __free_hook;
@@ -434,6 +435,14 @@ void DeathHandler::SignalHandler(int sig, void * /* info */, void *secret) {
   int trace_size = backtrace(trace, frames_count_ + 2);
   __malloc_hook = oldMallocHook;
   __free_hook = oldFreeHook;
+
+#if ( __GNUC__ == 4 && __GNUC_MINOR__ >= 6 ) || __GNUC__ >= 5
+#pragma GCC diagnostic pop
+#endif
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
   if (trace_size <= 2) {
     safe_abort();
   }
@@ -594,12 +603,5 @@ void DeathHandler::SignalHandler(int sig, void * /* info */, void *secret) {
   // This is called in the child process
   _Exit(EXIT_SUCCESS);
 }
-
-#if __GNUC__ >= 4 && __GNUC_MINOR__ >= 6
-#pragma GCC diagnostic pop
-#endif
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
 
 }  // namespace Debug
