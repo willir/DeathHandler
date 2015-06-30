@@ -151,6 +151,7 @@ DeathHandler::DeathHandler() {
   sigaction(SIGSEGV, &sa, NULL);
   sigaction(SIGABRT, &sa, NULL);  
   sigaction(SIGFPE, &sa, NULL);
+  sigaction(SIGTRAP, &sa, NULL);
 }
 
 DeathHandler::~DeathHandler() {
@@ -167,6 +168,11 @@ DeathHandler::~DeathHandler() {
   sigaction(SIGFPE, NULL, &sa);
   sa.sa_handler = SIG_DFL;
   sigaction(SIGFPE, &sa, NULL);
+
+  sigaction(SIGTRAP, NULL, &sa);
+  sa.sa_handler = SIG_DFL;
+  sigaction(SIGTRAP, &sa, NULL);
+
   delete[] memory_;
 }
 
@@ -385,6 +391,9 @@ void DeathHandler::SignalHandler(int sig, void * /* info */, void *secret) {
         break;
       case SIGFPE:
         strcat(msg, "Floating point exception");  // NOLINT(runtime/printf)
+        break;
+      case SIGTRAP:
+        strcat(msg, "ASSERT");  // NOLINT(runtime/printf)
         break;
       default:
         strcat(msg, "Caught signal ");  // NOLINT(runtime/printf)
