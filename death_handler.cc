@@ -602,7 +602,7 @@ void DeathHandler::SignalHandler(int sig, void * /* info */, void *secret) {
 
   // Write '\0' to indicate the end of the output
   char end = '\0';
-  write(STDERR_FILENO, &end, 1);
+  Safe::print2stderr(&end, 1);
   
   if (thread_safe_) {
     // Resume the parent process
