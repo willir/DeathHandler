@@ -57,7 +57,7 @@
 #include <stddef.h>
 
 // Comment this out on systems without quick_exit()
-#define QUICK_EXIT
+// #define QUICK_EXIT
 
 namespace Debug {
 
